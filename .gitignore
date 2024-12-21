@@ -1,0 +1,12 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/.cr/personal/FavoritesList
+/.vs/VNTranslationTools
+/VNTextPatch/.vs
+/VNTextPatch/obj
+/VNTextPatch.CLI/.vs
+/VNTextPatch.CLI/obj
+/Build/Debug
+/Build/Release
