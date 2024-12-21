@@ -57,41 +57,32 @@ namespace VNTextPatch.CLI
                 return;
             }
 
-            string inputPath = Path.GetFullPath(args[1]);
-            string textPath = Path.GetFullPath(args[2]);
+            string inputPath = Path.GetFullPath(args[1]).Replace("\"", string.Empty);
+            string textPath = Path.GetFullPath(args[2]).Replace("\"", string.Empty);
 
-            ScriptLocation inputLocation;
-            if (!TryParseLocalPath(inputPath, options.Format, out inputLocation))
+            if (!TryParseLocalPath(inputPath, options.Format, out ScriptLocation inputLocation))
             {
                 return;
             }
 
             ScriptLocation textLocation = GetLocalTextScriptLocation(inputLocation, textPath);
-
-            Extracter extracter = new Extracter(inputLocation.Collection, textLocation.Collection);
-            try
+            Extractor extractor = new Extractor(inputLocation.Collection, textLocation.Collection);
+            if (inputLocation.ScriptName != null)
             {
-
-                if (inputLocation.ScriptName != null)
-                {
-                    extracter.ExtractOne(inputLocation.ScriptName, textLocation.ScriptName);
-                }
-                else
-                {
-                    extracter.ExtractAll();
-                }
-
-                PrintExtractionStatistics(extracter.TotalLines, extracter.TotalCharacters);
+                extractor.ExtractOne(inputLocation.ScriptName, textLocation.ScriptName);
             }
-            finally
+            else
             {
-                IDisposable textCollection = textLocation.Collection as IDisposable;
-                textCollection?.Dispose();
+                extractor.ExtractAll();
+            }
 
-                if (textCollection is ExcelScriptCollection && extracter.TotalLines == 0)
-                {
-                    File.Delete(textPath);
-                }
+            PrintExtractionStatistics(extractor.TotalLines, extractor.TotalCharacters);
+            IDisposable textCollection = textLocation.Collection as IDisposable;
+            textCollection?.Dispose();
+
+            if (textCollection is ExcelScriptCollection && extractor.TotalLines == 0)
+            {
+                File.Delete(textPath);
             }
 
             CharacterNames.Save();
@@ -110,57 +101,44 @@ namespace VNTextPatch.CLI
             string outputPath = Path.GetFullPath(args[3]);
             string sjisExtPath = args.Length > 4 ? Path.GetFullPath(args[4]) : null;
 
-            ScriptLocation inputLocation;
-            if (!TryParseLocalPath(inputPath, options.Format, out inputLocation))
+            if (!TryParseLocalPath(inputPath, options.Format, out ScriptLocation inputLocation))
             {
                 return;
             }
 
             ScriptLocation textLocation = GetLocalTextScriptLocation(inputLocation, textPath);
 
-            if (sjisExtPath == null)
-            {
-                sjisExtPath = Path.Combine(inputLocation.ScriptName != null ? Path.GetDirectoryName(outputPath) : outputPath, "sjis_ext.bin");
-            }
+            sjisExtPath ??= Path.Combine(inputLocation.ScriptName != null ? Path.GetDirectoryName(outputPath) : outputPath, "sjis_ext.bin");
 
             if (File.Exists(sjisExtPath))
             {
                 StringUtil.SjisTunnelEncoding.SetMappingTable(File.ReadAllBytes(sjisExtPath));
             }
 
-            try
+            Inserter inserter;
+            if (inputLocation.ScriptName != null)
             {
-                Inserter inserter;
-                if (inputLocation.ScriptName != null)
-                {
-                    ScriptLocation outputLocation = ScriptLocation.FromFilePath(outputPath, options.Format);
-                    inserter = new Inserter(inputLocation.Collection, textLocation.Collection, outputLocation.Collection);
-                    inserter.InsertOne(inputLocation.ScriptName, textLocation.ScriptName, outputLocation.ScriptName);
-                }
-                else
-                {
-                    FolderScriptCollection inputCollection = (FolderScriptCollection)inputLocation.Collection;
-                    FolderScriptCollection outputCollection = new FolderScriptCollection(outputPath, options.Format, inputCollection.Extension);
-                    inserter = new Inserter(inputCollection, textLocation.Collection, outputCollection);
-                    inserter.InsertAll();
-                }
-
-                byte[] sjisExtContent = StringUtil.SjisTunnelEncoding.GetMappingTable();
-                if (sjisExtContent.Length > 0)
-                {
-                    File.WriteAllBytes(sjisExtPath, sjisExtContent);
-                }
-
-                if (inserter.Statistics != null)
-                {
-                    PrintInsertionStatistics(inserter.Statistics);
-                }
+                ScriptLocation outputLocation = ScriptLocation.FromFilePath(outputPath, options.Format);
+                inserter = new Inserter(inputLocation.Collection, textLocation.Collection, outputLocation.Collection);
+                inserter.InsertOne(inputLocation.ScriptName, textLocation.ScriptName, outputLocation.ScriptName);
             }
-            finally
+            else
             {
-                IDisposable textCollection = textLocation.Collection as IDisposable;
-                textCollection?.Dispose();
+                FolderScriptCollection inputCollection = (FolderScriptCollection)inputLocation.Collection;
+                FolderScriptCollection outputCollection = new FolderScriptCollection(outputPath, options.Format, inputCollection.Extension);
+                inserter = new Inserter(inputCollection, textLocation.Collection, outputCollection);
+                inserter.InsertAll();
             }
+
+            byte[] sjisExtContent = StringUtil.SjisTunnelEncoding.GetMappingTable();
+            if (sjisExtContent.Length > 0)
+            {
+                File.WriteAllBytes(sjisExtPath, sjisExtContent);
+            }
+
+            PrintInsertionStatistics(inserter.Statistics);
+            IDisposable textCollection = textLocation.Collection as IDisposable;
+            textCollection?.Dispose();
         }
 
         private static void InsertGoogleDocs(string[] args, Options options)
@@ -176,18 +154,14 @@ namespace VNTextPatch.CLI
             string outputPath = Path.GetFullPath(args[3]);
             string sjisExtPath = args.Length > 4 ? Path.GetFullPath(args[4]) : null;
 
-            ScriptLocation inputLocation;
-            if (!TryParseLocalPath(inputPath, options.Format, out inputLocation))
+            if (!TryParseLocalPath(inputPath, options.Format, out ScriptLocation inputLocation))
             {
                 return;
             }
 
             GoogleDocsScriptCollection textCollection = new GoogleDocsScriptCollection(spreadsheetId);
 
-            if (sjisExtPath == null)
-            {
-                sjisExtPath = Path.Combine(inputLocation.ScriptName != null ? Path.GetDirectoryName(outputPath) : outputPath, "sjis_ext.bin");
-            }
+            sjisExtPath ??= Path.Combine(inputLocation.ScriptName != null ? Path.GetDirectoryName(outputPath) : outputPath, "sjis_ext.bin");
 
             if (File.Exists(sjisExtPath))
             {
@@ -218,10 +192,7 @@ namespace VNTextPatch.CLI
                 File.WriteAllBytes(sjisExtPath, sjisExtContent);
             }
 
-            if (inserter.Statistics != null)
-            {
-                PrintInsertionStatistics(inserter.Statistics);
-            }
+            PrintInsertionStatistics(inserter.Statistics);
         }
 
         private static bool TryParseLocalPath(string path, string format, out ScriptLocation location)
@@ -286,22 +257,31 @@ namespace VNTextPatch.CLI
 
         private static void PrintExtractionStatistics(int lines, int characters)
         {
+            Console.WriteLine();
+            Console.WriteLine("Extraction complete.");
             Console.WriteLine($"Total lines: {lines}");
             Console.WriteLine($"Total characters: {characters}");
+            Console.WriteLine();
         }
 
         private static void PrintInsertionStatistics(ILineStatistics statistics)
         {
-            Console.WriteLine($"Total lines: {statistics.Total}");
-            Console.WriteLine($"Translated:  {statistics.Translated,-10} ({(float)statistics.Translated / statistics.Total:P2})");
-            Console.WriteLine($"Checked:     {statistics.Checked,-10} ({(float)statistics.Checked / statistics.Total:P2})");
-            Console.WriteLine($"Edited:      {statistics.Edited,-10} ({(float)statistics.Edited / statistics.Total:P2})");
+            Console.WriteLine();
+            Console.WriteLine("Insertion complete.");
+            if (statistics != null)
+            {
+                Console.WriteLine($"Total lines: {statistics.Total}");
+                Console.WriteLine($"Translated:  {statistics.Translated,-10} ({(float)statistics.Translated / statistics.Total:P2})");
+                Console.WriteLine($"Checked:     {statistics.Checked,-10} ({(float)statistics.Checked / statistics.Total:P2})");
+                Console.WriteLine($"Edited:      {statistics.Edited,-10} ({(float)statistics.Edited / statistics.Total:P2})");
+            }
+            Console.WriteLine();
         }
 
         private static void PrintUsage()
         {
             string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-            Console.WriteLine($"Usage:");
+            Console.WriteLine("Usage:");
             Console.WriteLine($"    {assemblyName} extractlocal infile|infolder scriptfile|scriptfolder");
             Console.WriteLine($"    {assemblyName} insertlocal infile|infolder scriptfile|scriptfolder outfile|outfolder");
             Console.WriteLine($"    {assemblyName} insertgdocs infile|infolder spreadsheetId outfile|outfolder");

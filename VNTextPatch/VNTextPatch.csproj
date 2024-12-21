@@ -136,7 +136,7 @@
     <Compile Include="Scripts\GoogleDocsScriptCollection.cs" />
     <Compile Include="Scripts\FolderScriptCollection.cs" />
     <Compile Include="Enumerations.cs" />
-    <Compile Include="Extracter.cs" />
+    <Compile Include="Extractor.cs" />
     <Compile Include="Inserter.cs" />
     <Compile Include="IScript.cs" />
     <Compile Include="IScriptCollection.cs" />

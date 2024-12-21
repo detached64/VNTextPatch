@@ -36,31 +36,47 @@ namespace VNTextPatch
 
         public void InsertOne(string inputScriptName, string textScriptName, string outputScriptName)
         {
-            if (!_inputCollection.Exists(inputScriptName))
+            Console.Write($"{inputScriptName}...");
+
+            try
             {
-                throw new FileNotFoundException($"{inputScriptName} does not exist in {_inputCollection.Name}");
-            }
+                if (!_inputCollection.Exists(inputScriptName))
+                {
+                    Console.Write($"{inputScriptName} does not exist in {_inputCollection.Name}");
+                    return;
+                }
+                if (!_textCollection.Exists(textScriptName))
+                {
+                    Console.Write($"{textScriptName} does not exist in {_textCollection.Name}");
+                    return;
+                }
 
-            if (!_textCollection.Exists(textScriptName))
+                _textScript.Load(new ScriptLocation(_textCollection, textScriptName));
+                IEnumerable<ScriptString> strings = _textScript.GetStrings();
+
+                _inputOutputScript.Load(new ScriptLocation(_inputCollection, inputScriptName));
+
+                _outputCollection.Add(outputScriptName);
+                _inputOutputScript.WritePatched(strings, new ScriptLocation(_outputCollection, outputScriptName));
+
+                Console.Write("Done");
+            }
+            catch (Exception ex)
             {
-                throw new FileNotFoundException($"{textScriptName} does not exist in {_textCollection.Name}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write($"Error: {ex.Message}. Skip...");
+                Console.ResetColor();
             }
-
-            _textScript.Load(new ScriptLocation(_textCollection, textScriptName));
-            IEnumerable<ScriptString> strings = _textScript.GetStrings();
-
-            _inputOutputScript.Load(new ScriptLocation(_inputCollection, inputScriptName));
-
-            _outputCollection.Add(outputScriptName);
-            _inputOutputScript.WritePatched(strings, new ScriptLocation(_outputCollection, outputScriptName));
+            finally
+            {
+                Console.WriteLine();
+            }
         }
 
         public void InsertAll()
         {
             foreach (string inputScriptName in _inputCollection.Scripts)
             {
-                Console.WriteLine(inputScriptName);
-
                 string textScriptName;
                 if (!string.IsNullOrEmpty(_inputOutputScript.Extension))
                 {
