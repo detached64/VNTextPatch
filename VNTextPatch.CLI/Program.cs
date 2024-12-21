@@ -280,11 +280,12 @@ namespace VNTextPatch.CLI
 
         private static void PrintUsage()
         {
-            string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+            string assemblyName = "VNTextPatch.CLI.exe";
             Console.WriteLine("Usage:");
             Console.WriteLine($"    {assemblyName} extractlocal infile|infolder scriptfile|scriptfolder");
             Console.WriteLine($"    {assemblyName} insertlocal infile|infolder scriptfile|scriptfolder outfile|outfolder");
             Console.WriteLine($"    {assemblyName} insertgdocs infile|infolder spreadsheetId outfile|outfolder");
+            Console.WriteLine();
         }
 
         private class Options

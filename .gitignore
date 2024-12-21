@@ -3,7 +3,7 @@
 ################################################################################
 
 /.cr/personal/FavoritesList
-/.vs/VNTranslationTools
+/.vs/VNTextPatch
 /VNTextPatch/.vs
 /VNTextPatch/obj
 /VNTextPatch.CLI/.vs
@@ -11,3 +11,4 @@
 /Build/Debug
 /Build/Release
 /VNTextPatch.CLI/VNTextPatch.CLI.csproj.user
+/VNTextPatch/VNTextPatch.csproj.user
