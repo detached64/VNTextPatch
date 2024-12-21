@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using VNTextPatch.Scripts;
 using VNTextPatch.Util;
@@ -280,11 +279,11 @@ namespace VNTextPatch.CLI
 
         private static void PrintUsage()
         {
-            string assemblyName = "VNTextPatch.CLI.exe";
+            const string assemblyName = "VNTextPatch.CLI.exe";
             Console.WriteLine("Usage:");
-            Console.WriteLine($"    {assemblyName} extractlocal infile|infolder scriptfile|scriptfolder");
-            Console.WriteLine($"    {assemblyName} insertlocal infile|infolder scriptfile|scriptfolder outfile|outfolder");
-            Console.WriteLine($"    {assemblyName} insertgdocs infile|infolder spreadsheetId outfile|outfolder");
+            Console.WriteLine($"    {assemblyName} extractlocal/-e infile|infolder scriptfile|scriptfolder");
+            Console.WriteLine($"    {assemblyName} insertlocal/-i infile|infolder scriptfile|scriptfolder outfile|outfolder");
+            Console.WriteLine($"    {assemblyName} insertgdocs/-ig infile|infolder spreadsheetId outfile|outfolder");
             Console.WriteLine();
         }
 

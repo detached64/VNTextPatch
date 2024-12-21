@@ -4,11 +4,10 @@
 
 /.cr/personal/FavoritesList
 /.vs/VNTextPatch
+/Build
 /VNTextPatch/.vs
 /VNTextPatch/obj
 /VNTextPatch.CLI/.vs
 /VNTextPatch.CLI/obj
-/Build/Debug
-/Build/Release
 /VNTextPatch.CLI/VNTextPatch.CLI.csproj.user
 /VNTextPatch/VNTextPatch.csproj.user
