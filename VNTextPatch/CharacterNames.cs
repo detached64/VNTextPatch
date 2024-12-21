@@ -22,7 +22,15 @@ namespace VNTextPatch
                 XmlSerializer serializer = new XmlSerializer(typeof(Document));
                 doc = (Document)serializer.Deserialize(stream);
             }
-            _translations = (doc.Characters ?? new Character[0]).ToDictionary(c => c.JapaneseName, c => c.EnglishName);
+            try
+            {
+                _translations = (doc.Characters ?? []).ToDictionary(c => c.JapaneseName, c => c.EnglishName);
+            }
+            catch (ArgumentException)
+            {
+                _translations = [];         // avoid repeated keys
+                File.Delete(FilePath);      // delete the invalid file to avoid future errors
+            }
         }
 
         private static CharacterNames Instance
