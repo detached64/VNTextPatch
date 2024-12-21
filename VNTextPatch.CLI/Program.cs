@@ -25,18 +25,18 @@ namespace VNTextPatch.CLI
                 string operation = args[0];
                 switch (operation)
                 {
+                    case "-e":
                     case "extractlocal":
                         ExtractLocal(args, options);
                         break;
-
+                    case "-i":
                     case "insertlocal":
                         InsertLocal(args, options);
                         break;
-
+                    case "-ig":
                     case "insertgdocs":
                         InsertGoogleDocs(args, options);
                         break;
-
                     default:
                         Console.WriteLine($"Unknown operation: {operation}");
                         PrintUsage();
